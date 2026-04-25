@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodLink | Donor & Hospital Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page">
+        <header class="nav">
+            <div class="brand">
+                <div class="brand-mark">BL</div>
+                <div class="brand-text">
+                    <div class="brand-title">BloodLink</div>
+                    <div class="brand-subtitle">Donor ↔ Hospital coordination</div>
+                </div>
+            </div>
+
+            <nav class="nav-links" aria-label="Primary">
+                <a href="#search">Search</a>
+                <a href="#portal">Portal</a>
+                <a href="#chat">Assistant</a>
+            </nav>
+
+            <div class="nav-actions">
+                <div id="userBadge" class="pill muted"></div>
+                <button id="logoutBtn" class="btn ghost hidden" type="button">Logout</button>
+            </div>
+        </header>
+
+        <section class="hero" id="search">
+            <div class="hero-copy">
+                <h1>Search donors and hospital blood needs</h1>
+                <p>
+                    A simple search-first experience: pick a blood group and city, then review matching donors and hospitals.
+                </p>
+                <div class="hero-badges">
+                    <span class="badge">City match</span>
+                    <span class="badge">Blood compatibility</span>
+                    <span class="badge">Request workflow</span>
+                </div>
+            </div>
+
+            <div class="hero-card card">
+                <div class="hero-card-title">Search for blood</div>
+                <form id="publicSearchForm" class="search-grid">
+                    <label class="field">
+                        <span>Blood group</span>
+                        <select id="publicBlood" required>
+                            <option value="">Select blood group</option>
+                            <option>A+</option>
+                            <option>A-</option>
+                            <option>B+</option>
+                            <option>B-</option>
+                            <option>O+</option>
+                            <option>O-</option>
+                            <option>AB+</option>
+                            <option>AB-</option>
+                        </select>
+                    </label>
+
+                    <label class="field">
+                        <span>City</span>
+                        <select id="publicCity" required>
+                            <option value="">Select city</option>
+                        </select>
+                    </label>
+
+                    <button class="btn primary wide" type="submit">Search</button>
+                </form>
+                <div class="hint">
+                    Public search uses the live directory backed by the app database (<code>/api/directory/*</code>).
+                </div>
+            </div>
+        </section>
+
+        <section class="grid two" id="publicResults">
+            <div class="card">
+                <div class="section-head">
+                    <h2>Donors</h2>
+                    <span id="donorCount" class="pill muted"></span>
+                </div>
+                <div id="publicDonors" class="list"></div>
+            </div>
+            <div class="card">
+                <div class="section-head">
+                    <h2>Hospitals needing blood</h2>
+                    <span id="hospitalCount" class="pill muted"></span>
+                </div>
+                <div id="publicHospitals" class="list"></div>
+            </div>
+        </section>
+
+        <section id="portal" class="stack-gap">
+            <div class="section-head">
+                <h2>Portal</h2>
+                <p class="muted">Create an account to manage requests, responses, and your donation history.</p>
+            </div>
+
+            <section id="authView" class="card">
+                <div class="section-head">
+                    <h2>Login / Register</h2>
+                    <p class="muted">Role-based access (donor / hospital).</p>
+                </div>
+
+                <div class="grid two">
+                    <form id="registerForm" class="stack">
+                        <h3>Register</h3>
+                        <input id="regName" placeholder="Name" required>
+                        <input id="regEmail" type="email" placeholder="Email" required>
+                        <input id="regPassword" type="password" placeholder="Password (min 6)" required>
+                        <select id="regRole" required>
+                            <option value="donor">Donor</option>
+                            <option value="hospital">Hospital</option>
+                        </select>
+                        <select id="regCity" required>
+                            <option value="">Select city</option>
+                        </select>
+                        <input id="regContact" placeholder="Contact">
+                        <input id="regBloodGroup" placeholder="Donor blood group (A+, O-, ... )">
+                        <input id="regAge" type="number" placeholder="Donor age">
+                        <input id="regHospitalName" placeholder="Hospital display name (example: City General Hospital)">
+                        <div class="grid two">
+                            <input id="regLat" type="number" step="0.0001" placeholder="Latitude (optional)">
+                            <input id="regLng" type="number" step="0.0001" placeholder="Longitude (optional)">
+                        </div>
+                        <button class="btn primary" type="submit">Create account</button>
+                    </form>
+
+                    <form id="loginForm" class="stack">
+                        <h3>Login</h3>
+                        <input id="loginEmail" type="email" placeholder="Email" required>
+                        <input id="loginPassword" type="password" placeholder="Password" required>
+                        <button class="btn primary" type="submit">Login</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="donorView" class="hidden stack-gap">
+                <div class="grid two">
+                    <div class="card">
+                        <div class="section-head">
+                            <h2>Compatible requests (your city)</h2>
+                            <p class="muted">Only requests compatible with your blood group.</p>
+                        </div>
+                        <div id="donorRequests" class="list"></div>
+                    </div>
+                    <div class="card">
+                        <div class="section-head">
+                            <h2>Your donation record</h2>
+                            <p class="muted">Hospital approvals + completion history.</p>
+                        </div>
+                        <div id="donorHistory" class="list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="hospitalView" class="hidden stack-gap">
+                <div class="grid two">
+                    <div class="card">
+                        <div class="section-head">
+                            <h2>Create blood need</h2>
+                            <p class="muted">City is taken from your hospital profile.</p>
+                        </div>
+                        <form id="createRequestForm" class="stack">
+                            <input id="neededBloodGroup" placeholder="Needed blood group (A+, O-, ...)" required>
+                            <input id="unitsNeeded" type="number" min="1" value="1" required>
+                            <select id="urgency">
+                                <option value="normal">Normal</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                            <input id="requestNote" placeholder="Note (optional)">
+                            <button class="btn primary" type="submit">Publish request</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <div class="section-head">
+                            <h2>Incoming donor responses</h2>
+                            <p class="muted">Approve a donor, then mark the donation as completed.</p>
+                        </div>
+                        <div id="hospitalRequests" class="list"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="section-head">
+                        <h2>Completed donor record</h2>
+                        <p class="muted">Saved contacts for emergency follow-up.</p>
+                    </div>
+                    <div id="hospitalHistory" class="list"></div>
+                </div>
+            </section>
+        </section>
+
+        <section class="card chat-card" id="chat">
+            <div class="section-head">
+                <div>
+                    <h2>AI assistant</h2>
+                    <p class="muted">Ask anything about donation basics and how to use this portal. Quick prompts below.</p>
+                </div>
+                <span id="chatStatus" class="pill ok">Ready</span>
+            </div>
+
+            <div id="chatLock" class="callout hidden">
+                Please log in to use the assistant.
+            </div>
+
+            <div class="chips" id="chatChips" aria-label="Quick prompts"></div>
+
+            <div id="chatBox" class="chat-thread" role="log" aria-live="polite"></div>
+
+            <div class="chat-composer">
+                <input id="chatInput" type="text" placeholder="Example: open requests / find donors / donation tips" autocomplete="off">
+                <button id="chatSend" class="btn primary" type="button">Send</button>
+            </div>
+        </section>
+
+        <footer class="footer muted">BloodLink</footer>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
+
